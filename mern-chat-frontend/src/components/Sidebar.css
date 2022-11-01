@@ -1,3 +1,9 @@
+.listItem.list-group-item.active {
+    z-index: 2;
+    color: #fff;
+    background-color: #a5a6a7;
+    border-color: #a5a6a7;
+  }
 .member-status-img {
     width: 30px;
     height: 30px;

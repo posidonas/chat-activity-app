@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { useLocation } from 'react-router-dom'
+import Popup from 'reactjs-popup';
 import React, { useContext, useEffect, useState } from "react";
-import { Col, ListGroup, Row } from "react-bootstrap";
+import { Modal, Form, Button, Col, ListGroup, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { AppContext } from "../context/appContext";
 import { addNotifications, resetNotifications } from "../features/userSlice";
@@ -22,6 +23,10 @@ function Sidebar() {
     const dispatch = useDispatch();
     const { socket, setMembers, members, setCurrentRoom, getAppRooms, privateMemberMsg, rooms, setPrivateMemberMsg, currentRoom } = useContext(AppContext);
     const [newRoomName, setNewRoomName] = useState('');
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
 
     function joinRoom(room, isPublic = true) {
         if (!user) {
@@ -47,7 +52,9 @@ function Sidebar() {
             getRooms();
             socket.emit("join-room", "Lobby");
             socket.emit("new-user");
+
         }
+        
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -79,22 +86,23 @@ function Sidebar() {
         return <></>;
     }
     
+    
 
-  
-    const addRoom = () => {
+    function addRoom(e) {
+        e.preventDefault();
         axios.post('http://localhost:5001/rooms/',{
             room: newRoomName,
             roomType: locationText
         }).then(res => {  
             getRooms();
-            const resetInput = document.getElementById('addRoomSubmit');
-            resetInput.value= '';
+            setNewRoomName('');
           })
     }
-
+    
     const deleteAppRoom = (id) => {
         axios.delete(`http://localhost:5001/rooms/${id}`).then(res => {  
             getRooms();
+            setCurrentRoom("Lobby");
           })  
     }
 
@@ -106,22 +114,44 @@ function Sidebar() {
 
                 {rooms.filter(room => room.roomType === locationText || room.room === "Lobby").map((room) => (
                   
-                    <ListGroup.Item key={room.id} onClick={() => joinRoom(room.room)} active={room.room === currentRoom } style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
+                    <ListGroup.Item className="listItem" key={room.id} onClick={() => joinRoom(room.room)} active={room.room === currentRoom } style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
                         {room.room} {currentRoom !== room.room && <span className="badge rounded-pill bg-primary">{user.newMessages[room.room]}</span>}
                         {room.room !== 'Lobby' &&
                         <button onClick={() => deleteAppRoom(room._id)}>Delete</button>
                         }
-                        {/* {console.log(room.roomType)} */}
                     </ListGroup.Item>
                     
                 ))}
+                 <Button className="mt-3" variant="primary" onClick={handleShow}>
+                    Add Room
+                </Button>
+
+                <Modal show={show} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                    <Modal.Title>Add a Room</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form id="roomForm" onSubmit={addRoom}>
+                            <Row>
+                                <Col md={12} className='mb-3'>
+                                    <Form.Group>
+                                        <Form.Control type="text" placeholder="Room Name" value={newRoomName} onChange ={(event) => setNewRoomName(event.target.value)}></Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={3}>
+                                
+                                   
+                                    <Button id="form-btn" type="submit" variant="primary" onClick={handleClose}>
+                                        Save <i className="fas fa-paper-plane"></i>
+                                    </Button>
+                                </Col>
+                            </Row>
+                    `</Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                    </Modal.Footer>
+                </Modal>
                 
-                <input id="addRoomSubmit"
-                type='text'
-                placeholder='Room Name'
-                onChange ={(event) => setNewRoomName(event.target.value)}
-                ></input>
-                <button onClick={addRoom}>Add</button>
             </ListGroup>
             <h2>Members</h2> 
             {members.map((member) => (
