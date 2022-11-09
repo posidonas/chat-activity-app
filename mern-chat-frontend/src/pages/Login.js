@@ -18,8 +18,8 @@ function Login() {
             if (data) {
                 // socket work
                 socket.emit("new-user");
-                // navigate to the chat
-                navigate("/chat");
+                // navigate to Home
+                navigate("/");
             }
         });
     }

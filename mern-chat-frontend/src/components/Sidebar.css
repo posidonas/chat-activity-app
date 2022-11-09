@@ -1,9 +1,55 @@
+
+.ribbon-owner {
+    --f: 10px; /* control the folded part*/
+    --r: 15px; /* control the ribbon shape */
+    --t: 3px; /* the top offset */
+    
+    position: absolute;
+    inset: var(--t) calc(-1*var(--f)) auto auto;
+    padding: 0 10px var(--f) calc(10px + var(--r));
+    clip-path: 
+      polygon(0 0,100% 0,100% calc(100% - var(--f)),calc(100% - var(--f)) 100%,
+        calc(100% - var(--f)) calc(100% - var(--f)),0 calc(100% - var(--f)),
+        var(--r) calc(50% - var(--f)/2));
+    background: #666;
+    box-shadow: 0 calc(-1*var(--f)) 0 inset #0005;
+    color: #fff;
+  }
+  a.ribbon-owner {
+    text-decoration: none;
+  }
+  a.ribbon-owner:hover {
+    color: #fff;
+  }
+
 .listItem.list-group-item.active {
     z-index: 2;
-    color: #fff;
-    background-color: #a5a6a7;
-    border-color: #a5a6a7;
+    color: #41464b;
+    background-color: #e2e3e5;
+    border-color: #d3d6d8;
   }
+.listItem.list-group-item {
+    min-height: 68px;
+}
+.list-info {
+    width: 100%;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+.list-info__header {
+    margin-bottom: 2px;
+}
+.badge__custom {
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: end;
+}
 .member-status-img {
     width: 30px;
     height: 30px;

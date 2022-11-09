@@ -1,11 +1,11 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Sidebar-soccer";
 import MessageForm from "../components/MessageForm";
 
-function Chat() {
+function Soccer() {
     return (
-        <Container>
+        <Container className="mt-5">
             <Row>
                 <Col md={4}>
                     <Sidebar />
@@ -18,4 +18,4 @@ function Chat() {
     );
 }
 
-export default Chat;
+export default Soccer;

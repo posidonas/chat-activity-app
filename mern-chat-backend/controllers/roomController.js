@@ -7,15 +7,20 @@ const getAppRooms = asyncHandler(async (req, res) => {
 })
 
 const setAppRoom = asyncHandler(async (req, res) => {
+    const newRoomUser = req.body.roomUser;
     const newRoomName = req.body.room;
     const newRoomType = req.body.roomType;
+    const newRoomDate = req.body.roomDate;
     if(!req.body.room){
         res.status(400)
         throw new Error('Please add a text field')
     }
     const rooms = await Room.create({
+        roomUser: newRoomUser,
         room: newRoomName,
-        roomType: newRoomType
+        roomType: newRoomType,
+        roomDate: newRoomDate,
+        
     })
     res.status(200).json(rooms)
 })
@@ -27,8 +32,9 @@ const updateAppRoom = asyncHandler(async (req, res) => {
         throw new Error('Room not Found')
     }
     const updatedRoom = await Room.findByIdAndUpdate(req.params.id, req.body, {
-        new: true
+        new: true,
     })
+    res.status(200).json(updatedRoom)
 })
 
 const deleteAppRoom = asyncHandler(async (req, res) => {

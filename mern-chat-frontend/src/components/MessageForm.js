@@ -1,13 +1,21 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useLocation } from 'react-router-dom'
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { AppContext } from "../context/appContext";
 import "./MessageForm.css";
 function MessageForm() {
+
+    const location = useLocation();
+    const locationText = location.pathname.replace('/', '').charAt(0).toUpperCase() + location.pathname.slice(2);
+
     const [message, setMessage] = useState("");
+
     const user = useSelector((state) => state.user);
-    const { socket, currentRoom, setMessages, messages, privateMemberMsg } = useContext(AppContext);
+    const { socket, currentRoom, setMessages, messages, privateMemberMsg, rooms} = useContext(AppContext);
     const messageEndRef = useRef(null);
+
+   
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -34,7 +42,7 @@ function MessageForm() {
     socket.off("room-messages").on("room-messages", (roomMessages) => {
         setMessages(roomMessages);
     });
-
+  
     function handleSubmit(e) {
         e.preventDefault();
         if (!message) return;
@@ -42,16 +50,21 @@ function MessageForm() {
         const minutes = today.getMinutes() < 10 ? "0" + today.getMinutes() : today.getMinutes();
         const time = today.getHours() + ":" + minutes;
         const roomId = currentRoom;
-        socket.emit("message-room", roomId, message, user, time, todayDate);
+        const messageRoomType = locationText;
+        socket.emit("message-room", roomId, message, user, time, todayDate, messageRoomType);
         setMessage("");
     }
+    
     return (
         <>
             <div className="messages-output">
-                {user && !privateMemberMsg?._id && <div className="alert alert-info">You are in the {currentRoom} room</div>}
+                {user && !privateMemberMsg?._id && <div className="message-alert alert alert-secondary">
+                {rooms.filter(room => room._id === currentRoom ).map((room, welcomeidx) => (
+                    <span key={welcomeidx}><strong>{room.room}</strong> chat.</span>
+                ))}</div>}
                 {user && privateMemberMsg?._id && (
                     <>
-                        <div className="alert alert-info conversation-info">
+                        <div className="alert alert-secondary conversation-info">
                             <div>
                                 Your conversation with {privateMemberMsg.name} <img src={privateMemberMsg.picture} className="conversation-profile-pic" alt="Message Avatar"/>
                             </div>
@@ -59,10 +72,10 @@ function MessageForm() {
                     </>
                 )}
                 {!user && <div className="alert alert-danger">Please login</div>}
-
+                {/* messagesChat.filter(messageRoomType => (messageRoomType.messageRoomType === locationText)). */}
                 {user &&
-                    messages.map(({ _id: date, messagesByDate }, idx) => (
-                        <div key={idx}>
+                    messages.map(({ _id: date, messagesByDate }, messageidx) => (
+                        <div key={messageidx}>
                             <p className="alert alert-info text-center message-date-indicator">{date}</p>
                             {messagesByDate?.map(({ content, time, from: sender }, msgIdx) => (
                                 <div className={sender?.email === user?.email ? "message" : "incoming-message"} key={msgIdx}>
@@ -88,7 +101,7 @@ function MessageForm() {
                         </Form.Group>
                     </Col>
                     <Col md={1}>
-                        <Button variant="primary" type="submit" style={{ width: "100%", backgroundColor: "orange" }} disabled={!user}>
+                        <Button variant="dark gradient" type="submit" style={{ width: "100%"}} disabled={!user}>
                             <i className="fas fa-paper-plane"></i>
                         </Button>
                     </Col>

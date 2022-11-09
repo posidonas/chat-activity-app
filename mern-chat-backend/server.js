@@ -2,8 +2,10 @@ const express = require('express');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const messagesRoutes = require('./routes/messagesRoutes');
 const User = require('./models/User');
 const Message = require('./models/Message');
+
 const cors = require('cors');
 const { errorHandler } = require('./middleware/errorMiddleware')
 
@@ -15,15 +17,17 @@ app.use('/users', userRoutes)
 require('./connection')
 
 app.use('/rooms', roomRoutes)
-app.use(errorHandler)
 
 app.use('/rooms:id', roomRoutes)
-app.use(errorHandler)
 
 app.use('/rooms/hiking', roomRoutes)
-app.use(errorHandler)
 
 app.use('/rooms/hiking:id', roomRoutes)
+
+app.use('/messages', messagesRoutes)
+
+app.use('/rooms/myrooms', roomRoutes)
+
 app.use(errorHandler)
 
 const server = require('http').createServer(app);
@@ -73,8 +77,8 @@ io.on('connection', (socket)=> {
     socket.emit('room-messages', roomMessages)
   })
 
-  socket.on('message-room', async(room, content, sender, time, date) => {
-    const newMessage = await Message.create({content, from: sender, time, date, to: room});
+  socket.on('message-room', async(room, content, sender, time, date, messageRoomType) => {
+    const newMessage = await Message.create({content, from: sender, time, date, to: room, messageRoomType: messageRoomType});
     let roomMessages = await getLastMessagesFromRoom(room);
     roomMessages = sortRoomMessagesByDate(roomMessages);
     // sending message to room
