@@ -1,0 +1,8 @@
+.navbar--custom {
+	box-shadow: 1px 15px 29px -16px rgba(0, 0, 0, 0.15);
+	-webkit-box-shadow: 1px 15px 29px -16px rgba(0, 0, 0, 0.15);
+	-moz-box-shadow: 1px 15px 29px -16px rgba(0, 0, 0, 0.15);
+}
+.user-list {
+	border: none !important;
+}

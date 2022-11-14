@@ -1,25 +1,28 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const RoomSchema = new mongoose.Schema({
-  roomUser: {
-    type: String,
-  },
-  room: {
-    type: String,
-    require: [true, 'Please add a Room']
-  },
-  roomType: {
-    type: String,
-  },
-  roomDate: {
-    type: String,
-    require: [true, 'Please add a Date']
-  }
-}, {
+const RoomSchema = new mongoose.Schema(
+	{
+		roomUser: {
+			type: String,
+		},
+		room: {
+			type: String,
+			require: [true, "Please add a Room"],
+		},
+		roomType: {
+			type: String,
+		},
+		roomDate: {
+			type: Date,
+			require: [true, "Please add a Date"],
+		},
+		roomDescription: {
+			type: String,
+		},
+	},
+	{ timestamps: true }
+);
 
-    timestamps: true
-})
+const Room = mongoose.model("Room", RoomSchema);
 
-const Room = mongoose.model('Room', RoomSchema);
-
-module.exports = Room
+module.exports = Room;

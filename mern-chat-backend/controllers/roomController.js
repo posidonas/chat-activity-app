@@ -11,6 +11,7 @@ const setAppRoom = asyncHandler(async (req, res) => {
     const newRoomName = req.body.room;
     const newRoomType = req.body.roomType;
     const newRoomDate = req.body.roomDate;
+    const newRoomDescription = req.body.roomDescription;
     if(!req.body.room){
         res.status(400)
         throw new Error('Please add a text field')
@@ -20,6 +21,7 @@ const setAppRoom = asyncHandler(async (req, res) => {
         room: newRoomName,
         roomType: newRoomType,
         roomDate: newRoomDate,
+        roomDescription: newRoomDescription
         
     })
     res.status(200).json(rooms)

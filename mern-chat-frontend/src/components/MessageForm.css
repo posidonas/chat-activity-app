@@ -1,64 +1,122 @@
 .messages-output {
-    height: 80vh;
-    border: 1px solid lightgray;
-    overflow-y: scroll;
-    margin-bottom: 20px;
-
+	height: 73vh;
+	overflow-y: scroll;
+	margin-bottom: 25px;
+	box-shadow: 0px 12px 15px -4px rgba(0, 0, 0, 0.15), 0 -9px 0px 0px white,
+		12px 0 15px -4px rgba(0, 0, 0, 0.15),
+		-12px 0px 15px -4px rgba(0, 0, 0, 0.15);
+	-webkit-box-shadow: 0px 12px 15px -4px rgba(0, 0, 0, 0.15),
+		0 -9px 0px 0px white, 12px 0 15px -4px rgba(0, 0, 0, 0.15),
+		-12px 0px 15px -4px rgba(0, 0, 0, 0.15);
+	-moz-box-shadow: 0px 12px 15px -4px rgba(0, 0, 0, 0.15), 0 -9px 0px 0px white,
+		12px 0 15px -4px rgba(0, 0, 0, 0.15),
+		-12px 0px 15px -4px rgba(0, 0, 0, 0.15);
 }
-
+.message-input {
+	display: flex;
+	flex: 0 1 100%;
+	box-shadow: 0px 3px 14px -0 rgba(0, 0, 0, 0.2);
+	-webkit-box-shadow: 0px 3px 14px -0 rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0px 3px 14px -0 rgba(0, 0, 0, 0.2);
+}
+.message-input input {
+	border: none;
+	border-radius: 0 0 0 5px !important;
+}
+.message-input input:focus {
+	box-shadow: 0px 0px 14px 1px rgba(0, 0, 0, 0.25);
+	-webkit-box-shadow: 0px 0px 14px 1px rgba(0, 0, 0, 0.25);
+	-moz-box-shadow: 0px 0px 14px 1px rgba(0, 0, 0, 0.25);
+}
+.message-input button {
+	width: 100px !important;
+	border-radius: 0 0 5px 0 !important;
+}
+.messageUserInfo {
+	margin-left: 15px;
+	position: relative;
+	top: -15px;
+}
+.messageUserInfo img {
+	box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0 2.2);
+	box-shadow: 0px 2px 6px -1px rgba(0, 0, 0, 0.2);
+	-webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0px 2px 6px -1px rgba(0, 0, 0, 0.2);
+}
 .message-inner {
-    margin-left: 20px;
-    margin-bottom: 10px;
-    padding: 10px;
-    min-width: 200px;
-    max-width: 90%;
-    text-align: left;
-    min-height: 80px;
-    font: 400 1em, sans-serif;
-    display: inline-block;
-    border-radius: 10px;
-    background-color: #d1e7dd;
+	margin-left: 70px;
+	margin-bottom: 10px;
+	padding: 15px 25px;
+	max-width: 100%;
+	width: 80%;
+	text-align: left;
+	min-height: 80px;
+	font: 400 1em, sans-serif;
+	display: inline-block;
+	border-radius: 25px 25px 25px 0;
+	background: linear-gradient(
+		151deg,
+		rgb(163, 73, 242) 0%,
+		rgb(183, 146, 215) 80%,
+		rgb(174, 97, 240) 100%
+	);
+	color: #fff;
 }
-
+.user__conversation {
+	position: relative;
+	top: -5px;
+}
 .incoming-message .message-inner {
-    background-color: #ffdab9;
+	background-color: #ffdab9;
 }
 
 .incoming-message {
-    display: flex;
-    justify-content: flex-end;
-    margin-right: 20px;
+	display: flex;
+	justify-content: flex-end;
+	margin-right: 20px;
 }
 
 .message-timestamp-left {
-    font-size: 0.85em;
-    font-weight: 300;
-    margin-top: 10px;
+	font-size: 0.85em;
+	font-weight: 300;
+	margin: 0;
+	text-align: right;
 }
 
 .message-sender {
-    margin-bottom: 5px;
-    font-weight: bold;
+	margin: 0;
+	font-weight: bold;
+	margin-top: 5px;
 }
 
 .message-date-indicator {
-    width: 150px;
-    margin: 0 auto;
+	width: 150px;
+	margin: 25px auto;
+	padding: 10px;
+	border-radius: 10px;
+	box-shadow: 0px 3px 10px -1px rgba(0, 0, 0, 0.2);
+	-webkit-box-shadow: 0px 3px 10px -1px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0px 3px 10px -1px rgba(0, 0, 0, 0.2);
+	color: #8f8f8f;
 }
 
 .conversation-info {
-    padding: 0;
-    margin: 0 auto;
-    text-align: center;
-    height: 100px;
+	padding: 0;
+	margin: 0 auto;
+	text-align: center;
 }
 
 .conversation-profile-pic {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    margin: 10px auto;
-    margin-bottom: 30px;
-    border-radius: 50%;
-    margin-left: 10px;
+	width: 35px;
+	height: 35px;
+	object-fit: cover;
+	margin: 0px auto;
+	border-radius: 50%;
+	margin-left: 10px;
+}
+@media (min-width: 768px) {
+	.message-inner {
+		min-width: 350px;
+		max-width: 50%;
+	}
 }

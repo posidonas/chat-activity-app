@@ -1,114 +1,191 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { useLocation } from 'react-router-dom'
+import { useLocation } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { AppContext } from "../context/appContext";
 import "./MessageForm.css";
 function MessageForm() {
+	const location = useLocation();
+	const locationText =
+		location.pathname.replace("/", "").charAt(0).toUpperCase() +
+		location.pathname.slice(2);
 
-    const location = useLocation();
-    const locationText = location.pathname.replace('/', '').charAt(0).toUpperCase() + location.pathname.slice(2);
+	const [message, setMessage] = useState("");
 
-    const [message, setMessage] = useState("");
+	const user = useSelector((state) => state.user);
+	const {
+		socket,
+		currentRoom,
+		setMessages,
+		messages,
+		privateMemberMsg,
+		rooms,
+	} = useContext(AppContext);
+	const messageEndRef = useRef(null);
 
-    const user = useSelector((state) => state.user);
-    const { socket, currentRoom, setMessages, messages, privateMemberMsg, rooms} = useContext(AppContext);
-    const messageEndRef = useRef(null);
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages]);
 
-   
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+	function getFormattedDate() {
+		const date = new Date();
+		const year = date.getFullYear();
+		let month = (1 + date.getMonth()).toString();
 
-    function getFormattedDate() {
-        const date = new Date();
-        const year = date.getFullYear();
-        let month = (1 + date.getMonth()).toString();
+		month = month.length > 1 ? month : "0" + month;
+		let day = date.getDate().toString();
 
-        month = month.length > 1 ? month : "0" + month;
-        let day = date.getDate().toString();
+		day = day.length > 1 ? day : "0" + day;
 
-        day = day.length > 1 ? day : "0" + day;
+		return month + "/" + day + "/" + year;
+	}
 
-        return month + "/" + day + "/" + year;
-    }
+	function scrollToBottom() {
+		messageEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			block: "nearest",
+			inline: "start",
+		});
+	}
 
-    function scrollToBottom() {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+	const todayDate = getFormattedDate();
 
-    const todayDate = getFormattedDate();
+	socket.off("room-messages").on("room-messages", (roomMessages) => {
+		setMessages(roomMessages);
+	});
 
-    socket.off("room-messages").on("room-messages", (roomMessages) => {
-        setMessages(roomMessages);
-    });
-  
-    function handleSubmit(e) {
-        e.preventDefault();
-        if (!message) return;
-        const today = new Date();
-        const minutes = today.getMinutes() < 10 ? "0" + today.getMinutes() : today.getMinutes();
-        const time = today.getHours() + ":" + minutes;
-        const roomId = currentRoom;
-        const messageRoomType = locationText;
-        socket.emit("message-room", roomId, message, user, time, todayDate, messageRoomType);
-        setMessage("");
-    }
-    
-    return (
-        <>
-            <div className="messages-output">
-                {user && !privateMemberMsg?._id && <div className="message-alert alert alert-secondary">
-                {rooms.filter(room => room._id === currentRoom ).map((room, welcomeidx) => (
-                    <span key={welcomeidx}><strong>{room.room}</strong> chat.</span>
-                ))}</div>}
-                {user && privateMemberMsg?._id && (
-                    <>
-                        <div className="alert alert-secondary conversation-info">
-                            <div>
-                                Your conversation with {privateMemberMsg.name} <img src={privateMemberMsg.picture} className="conversation-profile-pic" alt="Message Avatar"/>
-                            </div>
-                        </div>
-                    </>
-                )}
-                {!user && <div className="alert alert-danger">Please login</div>}
-                {/* messagesChat.filter(messageRoomType => (messageRoomType.messageRoomType === locationText)). */}
-                {user &&
-                    messages.map(({ _id: date, messagesByDate }, messageidx) => (
-                        <div key={messageidx}>
-                            <p className="alert alert-info text-center message-date-indicator">{date}</p>
-                            {messagesByDate?.map(({ content, time, from: sender }, msgIdx) => (
-                                <div className={sender?.email === user?.email ? "message" : "incoming-message"} key={msgIdx}>
-                                    <div className="message-inner">
-                                        <div className="d-flex align-items-center mb-3">
-                                            <img src={sender.picture} style={{ width: 35, height: 35, objectFit: "cover", borderRadius: "50%", marginRight: 10 }} alt="Sender Avatar"/>
-                                            <p className="message-sender">{sender._id === user?._id ? "You" : sender.name}</p>
-                                        </div>
-                                        <p className="message-content">{content}</p>
-                                        <p className="message-timestamp-left">{time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                <div ref={messageEndRef} />
-            </div>
-            <Form onSubmit={handleSubmit}>
-                <Row>
-                    <Col md={11}>
-                        <Form.Group>
-                            <Form.Control type="text" placeholder="Your message" disabled={!user} value={message} onChange={(e) => setMessage(e.target.value)}></Form.Control>
-                        </Form.Group>
-                    </Col>
-                    <Col md={1}>
-                        <Button variant="dark gradient" type="submit" style={{ width: "100%"}} disabled={!user}>
-                            <i className="fas fa-paper-plane"></i>
-                        </Button>
-                    </Col>
-                </Row>
-            </Form>
-        </>
-    );
+	function handleSubmit(e) {
+		e.preventDefault();
+		if (!message) return;
+		const today = new Date();
+		const minutes =
+			today.getMinutes() < 10 ? "0" + today.getMinutes() : today.getMinutes();
+		const time = today.getHours() + ":" + minutes;
+		const roomId = currentRoom;
+		const messageRoomType = locationText;
+		socket.emit(
+			"message-room",
+			roomId,
+			message,
+			user,
+			time,
+			todayDate,
+			messageRoomType
+		);
+		setMessage("");
+	}
+
+	return (
+		<>
+			<Row>
+				<Col md={12}>
+					{user && !privateMemberMsg?._id && (
+						<div className="main-topbar__welcome message-alert alert alert-light">
+							{rooms
+								.filter((room) => room._id === currentRoom)
+								.map((room, welcomeidx) => (
+									<span key={welcomeidx}>
+										<strong>{room.room}</strong> chat.
+									</span>
+								))}
+						</div>
+					)}
+				</Col>
+			</Row>
+			<Row>
+				<Col md={12}>
+					{user && privateMemberMsg?._id && (
+						<>
+							<div className="main-topbar__welcome alert alert-light conversation-info">
+								<div className="user__conversation">
+									Your conversation with {privateMemberMsg.name}{" "}
+									<img
+										src={privateMemberMsg.picture}
+										className="conversation-profile-pic"
+										alt="Message Avatar"
+									/>
+								</div>
+							</div>
+						</>
+					)}
+					{!user && <div className="alert alert-danger">Please login</div>}
+				</Col>
+			</Row>
+			<Row>
+				<Col md={12} className="gx-md-4">
+					<div className="messages-output">
+						{user &&
+							messages.map(({ _id: date, messagesByDate }, messageidx) => (
+								<div key={messageidx}>
+									<p className="text-center message-date-indicator">{date}</p>
+									{messagesByDate?.map(
+										({ content, time, from: sender }, msgIdx) => (
+											<div
+												className={
+													sender?.email === user?.email
+														? "message"
+														: "incoming-message"
+												}
+												key={msgIdx}
+											>
+												<div className="d-flex align-items-center">
+													<div className="message-inner">
+														<p className="message-content mb-0">{content}</p>
+														<p className="message-timestamp-left">{time}</p>
+													</div>
+												</div>
+												<div className="messageUserInfo d-flex align-items-start flex-column mb-3">
+													<img
+														src={sender.picture}
+														style={{
+															width: 35,
+															height: 35,
+															objectFit: "cover",
+															borderRadius: "50%",
+															marginRight: 10,
+														}}
+														alt="Sender Avatar"
+													/>
+													<p className="message-sender mb-4">
+														{sender._id === user?._id ? "You" : sender.name}
+													</p>
+												</div>
+											</div>
+										)
+									)}
+								</div>
+							))}
+						<div ref={messageEndRef} />
+					</div>
+					<Form onSubmit={handleSubmit}>
+						<Row>
+							<Col md={12}>
+								<Form.Group>
+									<div className="message-input">
+										<Form.Control
+											type="text"
+											placeholder="Your message"
+											disabled={!user}
+											value={message}
+											onChange={(e) => setMessage(e.target.value)}
+										></Form.Control>
+										<Button
+											variant="dark gradient"
+											type="submit"
+											style={{ width: "100%" }}
+											disabled={!user}
+										>
+											<i className="fas fa-paper-plane"></i>
+										</Button>
+									</div>
+								</Form.Group>
+							</Col>
+						</Row>
+					</Form>
+				</Col>
+			</Row>
+		</>
+	);
 }
 
 export default MessageForm;
