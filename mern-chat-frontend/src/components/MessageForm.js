@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { AppContext } from "../context/appContext";
+import { Scrollbars } from "react-custom-scrollbars-2";
 import "./MessageForm.css";
 function MessageForm() {
 	const location = useLocation();
@@ -114,54 +115,60 @@ function MessageForm() {
 			<Row>
 				<Col md={12} className="gx-md-4">
 					<div className="messages-output">
-						{user &&
-							messages.map(({ _id: date, messagesByDate }, messageidx) => (
-								<div key={messageidx}>
-									<p className="text-center message-date-indicator">{date}</p>
-									{messagesByDate?.map(
-										({ content, time, from: sender }, msgIdx) => (
-											<div
-												className={
-													sender?.email === user?.email
-														? "message"
-														: "incoming-message"
-												}
-												key={msgIdx}
-											>
-												<div className="d-flex align-items-center">
-													<div className="message-inner">
-														<p className="message-content mb-0">{content}</p>
-														<p className="message-timestamp-left">{time}</p>
+						<Scrollbars
+							autoHeight
+							autoHeightMin={`calc(100vh - 120px)`}
+							autoHeightMax={`calc(-129px + 100vh)`}
+						>
+							{user &&
+								messages.map(({ _id: date, messagesByDate }, messageidx) => (
+									<div key={messageidx}>
+										<p className="text-center message-date-indicator">{date}</p>
+										{messagesByDate?.map(
+											({ content, time, from: sender }, msgIdx) => (
+												<div
+													className={
+														sender?.email === user?.email
+															? "message"
+															: "incoming-message"
+													}
+													key={msgIdx}
+												>
+													<div className="d-flex align-items-center">
+														<div className="message-inner">
+															<p className="message-content mb-0">{content}</p>
+															<p className="message-timestamp-left">{time}</p>
+														</div>
+													</div>
+													<div className="messageUserInfo d-flex align-items-start flex-column mb-3">
+														<img
+															src={sender.picture}
+															style={{
+																width: 35,
+																height: 35,
+																objectFit: "cover",
+																borderRadius: "50%",
+																marginRight: 10,
+															}}
+															alt="Sender Avatar"
+														/>
+														<p className="message-sender mb-4">
+															{sender._id === user?._id ? "You" : sender.name}
+														</p>
 													</div>
 												</div>
-												<div className="messageUserInfo d-flex align-items-start flex-column mb-3">
-													<img
-														src={sender.picture}
-														style={{
-															width: 35,
-															height: 35,
-															objectFit: "cover",
-															borderRadius: "50%",
-															marginRight: 10,
-														}}
-														alt="Sender Avatar"
-													/>
-													<p className="message-sender mb-4">
-														{sender._id === user?._id ? "You" : sender.name}
-													</p>
-												</div>
-											</div>
-										)
-									)}
-								</div>
-							))}
-						<div ref={messageEndRef} />
+											)
+										)}
+									</div>
+								))}
+							<div ref={messageEndRef} />
+						</Scrollbars>
 					</div>
 					<Form onSubmit={handleSubmit}>
 						<Row>
 							<Col md={12}>
 								<Form.Group>
-									<div className="message-input">
+									<div className="message-input mb-5">
 										<Form.Control
 											type="text"
 											placeholder="Your message"

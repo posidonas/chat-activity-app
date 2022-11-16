@@ -1,6 +1,8 @@
 .messages-output {
-	height: 73vh;
-	overflow-y: scroll;
+	/* height: 73vh; */
+	position: relative;
+	z-index: 3;
+	/* overflow-y: scroll; */
 	margin-bottom: 25px;
 	box-shadow: 0px 12px 15px -4px rgba(0, 0, 0, 0.15), 0 -9px 0px 0px white,
 		12px 0 15px -4px rgba(0, 0, 0, 0.15),
@@ -48,7 +50,7 @@
 	margin-bottom: 10px;
 	padding: 15px 25px;
 	max-width: 100%;
-	width: 80%;
+	width: 70%;
 	text-align: left;
 	min-height: 80px;
 	font: 400 1em, sans-serif;
@@ -67,13 +69,22 @@
 	top: -5px;
 }
 .incoming-message .message-inner {
-	background-color: #ffdab9;
+	background: linear-gradient(
+		151deg,
+		rgb(72, 44, 235) 0%,
+		rgb(141, 130, 241) 80%,
+		rgb(49, 78, 243) 100%
+	);
+	border-radius: 25px 25px 0 25px;
+	margin-right: 70px;
+	margin-left: 0;
 }
 
 .incoming-message {
 	display: flex;
-	justify-content: flex-end;
 	margin-right: 20px;
+	flex-direction: column;
+	align-items: flex-end;
 }
 
 .message-timestamp-left {
