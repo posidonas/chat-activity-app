@@ -19,6 +19,12 @@
 	box-shadow: 0 calc(-1 * var(--f)) 0 inset #0005;
 	color: #fff;
 }
+.fade.modal.show {
+	z-index: 2000;
+}
+.MuiDialog-root {
+	z-index: 3000 !important;
+}
 a.ribbon-owner {
 	text-decoration: none;
 }
@@ -67,7 +73,9 @@ a.ribbon-owner:hover {
 .navtabs__filter.nav-tabs {
 	border: none;
 }
-
+.nav-tabs .nav-link {
+	padding: 0 0 0 22px !important;
+}
 .navtabs__filter .nav-link {
 	color: #000;
 }

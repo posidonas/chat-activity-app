@@ -6,7 +6,7 @@ const activityRoutes = require("./routes/activityRoutes");
 const messagesRoutes = require("./routes/messagesRoutes");
 const User = require("./models/User");
 const Message = require("./models/Message");
-
+const Room = require("./models/Rooms");
 const cors = require("cors");
 const { errorHandler } = require("./middleware/errorMiddleware");
 
@@ -62,8 +62,26 @@ function sortRoomMessagesByDate(messages) {
 	});
 }
 
-// socket connection
+async function getLastRoom(room) {
+	let roomNew = await Room.aggregate([{ $match: { to: room } }]).then(function (
+		result
+	) {
+		console.log(result);
+	});
+	return roomNew;
+}
+// console.log(getLastRoom());
+// function sortRoomByDate(messages) {
+// 	return messages.sort(function (a, b) {
+// 		let date1 = a._id.split("/");
+// 		let date2 = b._id.split("/");
+// 		// do stuff with arr
+// 		date1 = date1[2] + date1[0] + date1[1];
+// 		date2 = date2[2] + date2[0] + date2[1];
+// 	});
+// }
 
+// socket connection
 io.on("connection", (socket) => {
 	socket.on("new-user", async () => {
 		const members = await User.find();
@@ -94,6 +112,36 @@ io.on("connection", (socket) => {
 			// sending message to room
 			io.to(room).emit("room-messages", roomMessages);
 			socket.broadcast.emit("notifications", room);
+		}
+	);
+
+	socket.on(
+		"new-room",
+		async (
+			room,
+			newRoomName,
+			newRoomUser,
+			newRoomType,
+			newRoomDate,
+			newRoomDescription
+		) => {
+			const newRoom = await Room.create({
+				roomName: newRoomName,
+				roomUser: newRoomUser,
+				roomType: newRoomType,
+				roomDate: newRoomDate,
+				roomDescription: newRoomDescription,
+				to: room,
+			});
+			// let roomNew = await getLastRoom(room);
+
+			// roomNew = sortRoomByDate(roomNew);
+
+			// sending message to room
+			const roomNew = await Room.find();
+			io.to(room).emit("room-new", roomNew);
+			// io.to(room).emit("room-new", console.log(roomNew));
+			// socket.emit("notifications", room);
 		}
 	);
 

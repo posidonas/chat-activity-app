@@ -1,6 +1,5 @@
-import axios from "axios";
 import { useLocation } from "react-router-dom";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import {
 	Tooltip,
 	Modal,
@@ -41,10 +40,8 @@ function SidebarCommon(props) {
 		rooms,
 		setPrivateMemberMsg,
 		currentRoom,
-		socketRoomList,
-		setSocketRoomList,
 	} = useContext(AppContext);
-
+	const roomEndRef = useRef(null);
 	const [newRoomName, setNewRoomName] = useState("");
 	const [newRoomDescription, setNewRoomDescription] = useState("");
 	const [newRoomDate, setNewRoomDate] = useState(new Date());
@@ -78,8 +75,21 @@ function SidebarCommon(props) {
 	socket.off("notifications").on("notifications", (room) => {
 		if (currentRoom !== room._id) dispatch(addNotifications(room));
 	});
+	// socket.off("notifications").on("notifications", (roomNew) => {
+	// 	if (currentRoom !== roomNew._id) dispatch(addNotifications(roomNew));
+	// });
 
-	useEffect((room) => {
+	useEffect(() => {
+		scrollToBottom();
+	}, [rooms]);
+
+	function scrollToBottom() {
+		roomEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			block: "nearest",
+		});
+	}
+	useEffect(() => {
 		if (user) {
 			getRooms();
 			socket.emit("new-user");
@@ -93,35 +103,56 @@ function SidebarCommon(props) {
 	socket.off("new-user").on("new-user", (payload) => {
 		setMembers(payload);
 	});
+	// socket.off("message").on("message");
 
 	function getRooms() {
 		fetch("http://localhost:5001/rooms")
 			.then((res) => res.json())
 			.then((data) => getAppRooms(data));
+		// socket.emit("message");
 	}
 
 	if (!user) {
 		return <></>;
 	}
-	// socket.off("room-new").on("room-new", (roomMessages) => {
-	// 	setSocketRoomList(roomMessages);
-	// });
 
-	function addRoom(e) {
+	socket.off("room-new").on("room-new", (roomNew) => {
+		getAppRooms(roomNew);
+	});
+	function addRoom(e, room) {
 		e.preventDefault();
-		axios
-			.post("http://localhost:5001/rooms/", {
-				room: newRoomName,
-				roomType: locationText,
-				roomDate: newRoomDate,
-				roomUser: user._id,
-				roomDescription: newRoomDescription,
-			})
-			.then((res) => {
-				getRooms();
-				setCurrentRoom(currentRoom);
-				setShow(false);
-			});
+		if (!newRoomName) return;
+		const roomId = currentRoom;
+		const newRoomType = locationText;
+		const newRoomUser = user._id;
+		// const newRoomName = room.roomName;
+		socket.emit(
+			"new-room",
+			roomId,
+			newRoomName,
+			newRoomUser,
+			newRoomType,
+			newRoomDate,
+			newRoomDescription,
+			user
+		);
+		setNewRoomName("");
+		getRooms();
+		setCurrentRoom(currentRoom);
+		setShow(false);
+		// axios
+		// 	.post("http://localhost:5001/rooms/", {
+		// 		roomName: newRoomName,
+		// 		roomType: locationText,
+		// 		roomDate: newRoomDate,
+		// 		roomUser: user._id,
+		// 		roomDescription: newRoomDescription,
+		// 	})
+		// 	.then((res) => {
+		// 		getRooms();
+		// 		setCurrentRoom(currentRoom);
+		// 		setShow(false);
+		// 	});
 	}
 
 	return (
@@ -146,12 +177,12 @@ function SidebarCommon(props) {
 								{rooms
 									.filter(
 										(room) =>
-											room.room === "Lobby" && room.roomType === locationText
+											room.roomName === "Lobby" &&
+											room.roomType === locationText
 									)
-									.map((room, listIdx) => (
-										<div key={listIdx}>
+									.map((room, LobbyIdx) => (
+										<div key={LobbyIdx}>
 											<ListGroup.Item
-												id={"listIdxRoom" + listIdx}
 												className="listItem mb-2"
 												onClick={() => joinRoom(room._id)}
 												active={room._id === currentRoom}
@@ -163,7 +194,7 @@ function SidebarCommon(props) {
 											>
 												<div className="list-info pe-3">
 													<h5 className="list-info__header mb-0">
-														{room.room}
+														{room.roomName}
 													</h5>
 												</div>
 												{currentRoom !== room._id && (
@@ -181,13 +212,12 @@ function SidebarCommon(props) {
 												{rooms
 													.filter(
 														(room) =>
-															room.room !== "Lobby" &&
+															room.roomName !== "Lobby" &&
 															room.roomType === locationText
 													)
 													.map((room, listIdx) => (
-														<div key={listIdx}>
+														<div key={listIdx} ref={roomEndRef}>
 															<ListGroup.Item
-																id={"listIdxRoom" + listIdx}
 																className="listItem mb-2"
 																onClick={() => joinRoom(room._id)}
 																active={room._id === currentRoom}
@@ -199,11 +229,11 @@ function SidebarCommon(props) {
 															>
 																<div className="list-info pe-3">
 																	<h5 className="list-info__header">
-																		{room.room}
+																		{room.roomName}
 																	</h5>
 																	<div>
 																		<span className="me-3">
-																			{room.room !== "Lobby" &&
+																			{room.roomName !== "Lobby" &&
 																				`${moment(room.roomDate).format(
 																					"dddd: DD-MM-YYYY HH:mm"
 																				)}`}
@@ -244,7 +274,7 @@ function SidebarCommon(props) {
 												{rooms
 													.filter(
 														(room) =>
-															room.room !== "Lobby" &&
+															room.roomName !== "Lobby" &&
 															room.roomType === locationText &&
 															moment(room.roomDate).unix() >
 																moment().format("X")
@@ -254,10 +284,9 @@ function SidebarCommon(props) {
 															moment(a.roomDate).format("X") -
 															moment(b.roomDate).format("X")
 													)
-													.map((room, listIdx) => (
-														<div key={listIdx}>
+													.map((room, sortListIdx) => (
+														<div key={sortListIdx}>
 															<ListGroup.Item
-																id={"listIdxRoom" + listIdx}
 																className="listItem mb-2"
 																onClick={() => joinRoom(room._id)}
 																active={room._id === currentRoom}
@@ -269,11 +298,11 @@ function SidebarCommon(props) {
 															>
 																<div className="list-info pe-3">
 																	<h5 className="list-info__header">
-																		{room.room}
+																		{room.roomName}
 																	</h5>
 																	<div>
 																		<span className="me-3">
-																			{room.room !== "Lobby" &&
+																			{room.roomName !== "Lobby" &&
 																				`${moment(room.roomDate).format(
 																					"dddd: DD-MM-YYYY HH:mm"
 																				)}`}
@@ -314,14 +343,13 @@ function SidebarCommon(props) {
 												{rooms
 													.filter(
 														(room) =>
-															room.room !== "Lobby" &&
+															room.roomName !== "Lobby" &&
 															room.roomType === locationText &&
 															user._id === room.roomUser
 													)
-													.map((room, listIdx) => (
-														<div key={listIdx}>
+													.map((room, myListIdx) => (
+														<div key={myListIdx}>
 															<ListGroup.Item
-																id={"listIdxRoom" + listIdx}
 																className="listItem mb-2"
 																onClick={() => joinRoom(room._id)}
 																active={room._id === currentRoom}
@@ -333,11 +361,11 @@ function SidebarCommon(props) {
 															>
 																<div className="list-info pe-3">
 																	<h5 className="list-info__header">
-																		{room.room}
+																		{room.roomName}
 																	</h5>
 																	<div>
 																		<span className="me-3">
-																			{room.room !== "Lobby" &&
+																			{room.roomName !== "Lobby" &&
 																				`${moment(room.roomDate).format(
 																					"dddd: DD-MM-YYYY HH:mm"
 																				)}`}
@@ -406,8 +434,8 @@ function SidebarCommon(props) {
 																value={newRoomDate}
 																format="dd-MM-yyyy HH:MM"
 																disablePast
-																onChange={(newDate) => {
-																	setNewRoomDate(newDate);
+																onChange={(newRoomDate) => {
+																	setNewRoomDate(newRoomDate);
 																}}
 																showTodayButton
 															/>

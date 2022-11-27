@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import Sidebar from "../components/Sidebar-soccer";
+import Sidebar from "../components/Sidebar-hiking";
 import UserComponent from "../components/UserComponent";
 import MessageForm from "../components/MessageForm";
 import "./roomPages.css";

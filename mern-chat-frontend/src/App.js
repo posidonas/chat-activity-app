@@ -21,7 +21,6 @@ function App() {
 	const [privateMemberMsg, setPrivateMemberMsg] = useState({});
 	const [newMessages, setNewMessages] = useState({});
 	const user = useSelector((state) => state.user);
-	const [socketRoomList, setSocketRoomList] = useState([]);
 
 	return (
 		<AppContext.Provider
@@ -43,8 +42,6 @@ function App() {
 				setRoomName,
 				getActivities,
 				activities,
-				socketRoomList,
-				setSocketRoomList,
 			}}
 		>
 			<BrowserRouter>

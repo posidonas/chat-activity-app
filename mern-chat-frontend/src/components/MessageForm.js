@@ -86,7 +86,7 @@ function MessageForm() {
 								.filter((room) => room._id === currentRoom)
 								.map((room, welcomeidx) => (
 									<span key={welcomeidx}>
-										<strong>{room.room}</strong> chat.
+										<strong>{room.roomName}</strong> chat.
 									</span>
 								))}
 						</div>
