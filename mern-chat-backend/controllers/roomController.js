@@ -1,10 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const Room = require("../models/Rooms");
+const moment = require("moment");
 
 const getAppRooms = asyncHandler(async (req, res) => {
 	const rooms = await Room.find();
 	res.status(200).json(rooms);
-	// io.emit("message", json(rooms));
 });
 
 const setAppRoom = asyncHandler(async (req, res) => {
@@ -44,6 +44,23 @@ const deleteAppRoom = asyncHandler(async (req, res) => {
 	await Room.findByIdAndRemove(id).exec();
 	res.end("deleted");
 });
+// console.log(moment());
+// const testdeleteAppRoom = async (req, res) => {
+// 	const rooms = await Room.find(roomDate);
+// 	res.status(200).json(rooms);
+// };
+// const test = Room.find().select("roomDate");
+
+// console.log(test);
+
+// const autoDeleteAppRoom = asyncHandler(async (req, res) => {
+// 	if (moment(req.params.roomDate).unix() < moment().format("X")) {
+// 		deleteAppRoom;
+// 		console.log("test");
+// 		// await Room.findByIdAndRemove(id).exec();
+// 		// res.end("deleted");
+// 	}
+// });
 
 module.exports = {
 	getAppRooms,

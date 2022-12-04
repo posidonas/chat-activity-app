@@ -62,25 +62,6 @@ function sortRoomMessagesByDate(messages) {
 	});
 }
 
-async function getLastRoom(room) {
-	let roomNew = await Room.aggregate([{ $match: { to: room } }]).then(function (
-		result
-	) {
-		console.log(result);
-	});
-	return roomNew;
-}
-// console.log(getLastRoom());
-// function sortRoomByDate(messages) {
-// 	return messages.sort(function (a, b) {
-// 		let date1 = a._id.split("/");
-// 		let date2 = b._id.split("/");
-// 		// do stuff with arr
-// 		date1 = date1[2] + date1[0] + date1[1];
-// 		date2 = date2[2] + date2[0] + date2[1];
-// 	});
-// }
-
 // socket connection
 io.on("connection", (socket) => {
 	socket.on("new-user", async () => {
@@ -134,16 +115,37 @@ io.on("connection", (socket) => {
 				to: room,
 			});
 			// let roomNew = await getLastRoom(room);
-
 			// roomNew = sortRoomByDate(roomNew);
 
 			// sending message to room
 			const roomNew = await Room.find();
 			io.to(room).emit("room-new", roomNew);
-			// io.to(room).emit("room-new", console.log(roomNew));
-			// socket.emit("notifications", room);
 		}
 	);
+
+	socket.on("delete-room", async () => {
+		const deleteRoom = await Room.find({});
+		io.emit("room-delete", deleteRoom);
+	});
+
+	socket.on("update-room", async (room) => {
+		const updateRoom = await Room.find({
+			to: room,
+		});
+		io.emit("room-update", updateRoom);
+	});
+
+	// socket.on(
+	// 	"update-room",
+	// 	async (newRoomName, newRoomDate, newRoomDescription) => {
+	// 		const updateRoom = await Room.find({
+	// 			roomName: newRoomName,
+	// 			roomDate: newRoomDate,
+	// 			roomDescription: newRoomDescription,
+	// 		});
+	// 		io.emit("room-update", updateRoom);
+	// 	}
+	// );
 
 	app.delete("/logout", async (req, res) => {
 		try {

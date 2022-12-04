@@ -62,6 +62,7 @@ function SidebarCommon(props) {
 		if (!user) {
 			return alert("Please login");
 		}
+
 		socket.emit("join-room", room, currentRoom);
 		setCurrentRoom(room);
 
@@ -75,12 +76,9 @@ function SidebarCommon(props) {
 	socket.off("notifications").on("notifications", (room) => {
 		if (currentRoom !== room._id) dispatch(addNotifications(room));
 	});
-	// socket.off("notifications").on("notifications", (roomNew) => {
-	// 	if (currentRoom !== roomNew._id) dispatch(addNotifications(roomNew));
-	// });
 
 	useEffect(() => {
-		scrollToBottom();
+		// scrollToBottom();
 	}, [rooms]);
 
 	function scrollToBottom() {
@@ -103,13 +101,11 @@ function SidebarCommon(props) {
 	socket.off("new-user").on("new-user", (payload) => {
 		setMembers(payload);
 	});
-	// socket.off("message").on("message");
 
 	function getRooms() {
 		fetch("http://localhost:5001/rooms")
 			.then((res) => res.json())
 			.then((data) => getAppRooms(data));
-		// socket.emit("message");
 	}
 
 	if (!user) {
@@ -118,14 +114,24 @@ function SidebarCommon(props) {
 
 	socket.off("room-new").on("room-new", (roomNew) => {
 		getAppRooms(roomNew);
+		scrollToBottom();
 	});
+
+	socket.off("room-delete").on("room-delete", (deleteRoom) => {
+		getAppRooms(deleteRoom);
+	});
+
+	socket.off("room-update").on("room-update", (updateRoom) => {
+		getAppRooms(updateRoom);
+		getRooms();
+	});
+
 	function addRoom(e, room) {
 		e.preventDefault();
 		if (!newRoomName) return;
 		const roomId = currentRoom;
 		const newRoomType = locationText;
 		const newRoomUser = user._id;
-		// const newRoomName = room.roomName;
 		socket.emit(
 			"new-room",
 			roomId,
@@ -275,9 +281,7 @@ function SidebarCommon(props) {
 													.filter(
 														(room) =>
 															room.roomName !== "Lobby" &&
-															room.roomType === locationText &&
-															moment(room.roomDate).unix() >
-																moment().format("X")
+															room.roomType === locationText
 													)
 													.sort(
 														(a, b) =>
@@ -432,7 +436,7 @@ function SidebarCommon(props) {
 																inputVariant="outlined"
 																ampm={false}
 																value={newRoomDate}
-																format="dd-MM-yyyy HH:MM"
+																format="dd-MM-yyyy HH:mm"
 																disablePast
 																onChange={(newRoomDate) => {
 																	setNewRoomDate(newRoomDate);
@@ -465,7 +469,6 @@ function SidebarCommon(props) {
 											</Row>
 										</Form>
 									</Modal.Body>
-									<Modal.Footer></Modal.Footer>
 								</Modal>
 							</ListGroup>
 						</Col>

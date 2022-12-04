@@ -10,43 +10,44 @@ import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 import "./myRooms.css";
 
-function MyRoomList(room) {
+function MyRoomList(room, roomName) {
 	const user = useSelector((state) => state.user);
 	const moment = require("moment");
 
-	const { setCurrentRoom, getAppRooms, rooms, currentRoom } =
+	const { socket, setCurrentRoom, getAppRooms, rooms, currentRoom } =
 		useContext(AppContext);
 	const [newRoomName, setNewRoomName] = useState("");
-	const [newRoomDate, setNewRoomDate] = useState(new Date());
+	const [newRoomDate, setNewRoomDate] = useState(null);
 	const [newRoomDescription, setNewRoomDescription] = useState("");
 
 	const [showEdit, setShowEdit] = useState(false);
 	const handleCloseEdit = () => {
 		setShowEdit(false);
 	};
-	function handleShowEdit(room) {
-		// rooms.filter(room => room._id === currentRoom ).map((room) => {
-		//     return setNewRoomName(room.roomName);
-		// })
-		// rooms.filter(room => room._id === currentRoom ).map((room) => {
-		//     return setNewRoomDate(room.roomDate);
-		// })
-		console.log("edit room");
-		setShowEdit(true);
-	}
 
 	function joinRoom(room) {
 		if (!user) {
 			return alert("Please login");
 		}
 		setCurrentRoom(room);
-		console.log("join room");
+
+		console.log(room);
 	}
+
+	function handleShowEdit(room) {
+		setNewRoomName(room.roomName);
+		setNewRoomDate(null);
+		setNewRoomDescription(room.roomDescription);
+		setShowEdit(true);
+		console.log(moment(room.roomDate).format("dddd: DD-MM-YYYY HH:mm"));
+	}
+
 	useEffect(() => {
 		if (user) {
 			getRooms();
-			setNewRoomName("");
-			setNewRoomDate(dayjs());
+			setNewRoomName(room.roomName);
+			setNewRoomDate(null);
+			setNewRoomDescription(room.roomDescription);
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,24 +63,31 @@ function MyRoomList(room) {
 		return <></>;
 	}
 	const deleteAppRoom = (id) => {
-		axios.delete(`http://localhost:5001/rooms/${id}`).then((res) => {
-			getRooms();
-			setCurrentRoom("Lobby");
-		});
+		socket.emit(
+			"delete-room",
+			axios.delete(`http://localhost:5001/rooms/${id}`)
+		);
+		getRooms();
 	};
 
-	function updateAppRoom(e, id) {
-		e.preventDefault();
-		axios
-			.put(`http://localhost:5001/rooms/${id}`, {
-				room: newRoomName,
-				roomDate: newRoomDate,
-				roomDescription: newRoomDescription,
-			})
-			.then((res) => {
-				getRooms();
-			});
-	}
+	const updateAppRoom = (e, id) => {
+		socket.emit(
+			"update-room",
+			e.preventDefault(),
+			axios
+				.put(`http://localhost:5001/rooms/${id}`, {
+					roomName: newRoomName,
+					roomDate: newRoomDate,
+					roomDescription: newRoomDescription,
+				})
+				.then((res) => {
+					getRooms();
+					setNewRoomName("");
+					setNewRoomDate("");
+					setNewRoomDescription("");
+				})
+		);
+	};
 
 	return (
 		<div>
@@ -106,71 +114,7 @@ function MyRoomList(room) {
 									</h2>
 								)}
 								<ListGroup.Item
-									className="listItem"
-									onClick={() => joinRoom(room._id)}
-									active={room._id === currentRoom}
-									style={{
-										cursor: "pointer",
-										display: "flex",
-										justifyContent: "space-between",
-									}}
-								>
-									<div className="list-info pe-3">
-										<h5>{room.roomName}</h5>
-										<div>
-											<span className="me-3">
-												{room.roomName !== "Lobby" &&
-													`${moment(room.roomDate).format(
-														"dddd: DD-MM-YYYY HH:mm"
-													)}`}
-											</span>
-											{room.roomDescription ? (
-												<i
-													data-bs-toggle="tooltip"
-													effect="solid"
-													data-bs-placement="bottom"
-													title={room.roomDescription}
-													className="fas fa-info-circle"
-												></i>
-											) : (
-												""
-											)}{" "}
-										</div>
-									</div>
-									<div>
-										<span className="me-3" onClick={handleShowEdit}>
-											<i className="fas fa-pen-to-square"></i>
-										</span>
-										<span onClick={() => deleteAppRoom(room._id)}>
-											<i className="fas fa-times"></i>
-										</span>
-									</div>
-								</ListGroup.Item>
-							</div>
-						))}{" "}
-				</div>
-				{/* Soccer */}
-				<div className="listItemWrapper mb-5">
-					{rooms
-						.filter(
-							(room) =>
-								user._id === room.roomUser &&
-								room.roomName !== "Lobby" &&
-								room.roomType === "Soccer"
-						)
-						.map((room, listIdxSoccer) => (
-							<div
-								key={listIdxSoccer}
-								id="soccerRoom"
-								className="roomsListItem"
-							>
-								{listIdxSoccer === 0 && (
-									<h2 className="mb-3">
-										<a href="/Soccer">Soccer</a>
-									</h2>
-								)}
-								<ListGroup.Item
-									className="listItem"
+									className="listItem mb-3"
 									onClick={() => joinRoom(room._id)}
 									active={room._id === currentRoom}
 									style={{
@@ -216,6 +160,73 @@ function MyRoomList(room) {
 							</div>
 						))}{" "}
 				</div>
+				{/* Soccer */}
+				<div className="listItemWrapper mb-5">
+					{rooms
+						.filter(
+							(room) =>
+								user._id === room.roomUser &&
+								room.roomName !== "Lobby" &&
+								room.roomType === "Soccer"
+						)
+						.map((room, listIdxSoccer) => (
+							<div
+								key={listIdxSoccer}
+								id="soccerRoom"
+								className="roomsListItem"
+							>
+								{listIdxSoccer === 0 && (
+									<h2 className="mb-3">
+										<a href="/Soccer">Soccer</a>
+									</h2>
+								)}
+								<ListGroup.Item
+									className="listItem mb-3"
+									onClick={() => joinRoom(room._id)}
+									active={room._id === currentRoom}
+									style={{
+										cursor: "pointer",
+										display: "flex",
+										justifyContent: "space-between",
+									}}
+								>
+									<div className="list-info pe-3">
+										<h5>{room.roomName}</h5>
+										<div>
+											<span className="me-3">
+												{room.roomName !== "Lobby" &&
+													`${moment(room.roomDate).format(
+														"dddd: DD-MM-YYYY HH:mm"
+													)}`}
+											</span>
+											{room.roomDescription ? (
+												<i
+													data-bs-toggle="tooltip"
+													effect="solid"
+													data-bs-placement="bottom"
+													title={room.roomDescription}
+													className="fas fa-info-circle"
+												></i>
+											) : (
+												""
+											)}{" "}
+										</div>
+									</div>
+									<div>
+										<span
+											className="me-3"
+											onClick={() => handleShowEdit(room._id)}
+										>
+											<i title="Edit" className="fas fa-pen-to-square"></i>
+										</span>
+										<span onClick={() => deleteAppRoom(room._id)}>
+											<i title="Delete" className="fas fa-times"></i>
+										</span>
+									</div>
+								</ListGroup.Item>
+							</div>
+						))}{" "}
+				</div>
 			</ListGroup>
 			{rooms
 				.filter((room) => room._id === currentRoom)
@@ -236,18 +247,31 @@ function MyRoomList(room) {
 												className="mb-3"
 												type="text"
 												placeholder={room.roomName}
+												defaultValue={room?.roomName}
 												value={newRoomName}
 												onChange={(e) => setNewRoomName(e.target.value)}
 											></Form.Control>
 											<MuiPickersUtilsProvider utils={MomentUtils}>
 												<DateTimePicker
+													className="mb-3"
 													label="Time of Event"
 													inputVariant="outlined"
+													ampm={false}
+													initialFocusedDate={room.roomDate}
+													emptyLabel={moment(room.roomDate).format(
+														"dddd: DD-MM-YYYY HH:mm"
+													)}
+													// valueDefault={new Date("2024/09/28")}
+													// selected={new Date("2024/09/28")}
+													// defaultValue={new Date("2024/09/28")}
+													// emptyLabel={moment(room.roomDate).format(
+													// 	"dddd: DD-MM-YYYY HH:mm"
+													// )}
 													value={newRoomDate}
-													format="dd-MM-yyyy HH:MM"
+													format={"eeee:  dd-MM-yyyy HH:mm"}
 													disablePast
-													onChange={(newDate) => {
-														setNewRoomDate(newDate);
+													onChange={(newRoomDate) => {
+														setNewRoomDate(newRoomDate);
 													}}
 													showTodayButton
 												/>
@@ -256,6 +280,7 @@ function MyRoomList(room) {
 												className="mb-3"
 												type="text"
 												placeholder="Description"
+												defaultValue={room?.roomDescription}
 												value={newRoomDescription}
 												onChange={(event) =>
 													setNewRoomDescription(event.target.value)

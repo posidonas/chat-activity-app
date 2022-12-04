@@ -117,8 +117,8 @@ function MessageForm() {
 					<div className="messages-output">
 						<Scrollbars
 							autoHeight
-							autoHeightMin={`calc(100vh - 120px)`}
-							autoHeightMax={`calc(-129px + 100vh)`}
+							autoHeightMin={`550px`}
+							// autoHeightMax={`calc(-138px + 100vh)`}
 						>
 							{user &&
 								messages.map(({ _id: date, messagesByDate }, messageidx) => (
