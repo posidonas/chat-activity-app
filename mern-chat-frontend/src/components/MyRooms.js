@@ -4,7 +4,6 @@ import { Modal, Form, Button, Col, ListGroup, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { AppContext } from "../context/appContext";
 
-import * as dayjs from "dayjs";
 import MomentUtils from "@date-io/date-fns"; // choose your lib
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
@@ -30,8 +29,6 @@ function MyRoomList(room, roomName) {
 			return alert("Please login");
 		}
 		setCurrentRoom(room);
-
-		console.log(room);
 	}
 
 	function handleShowEdit(room) {
@@ -39,7 +36,6 @@ function MyRoomList(room, roomName) {
 		setNewRoomDate(null);
 		setNewRoomDescription(room.roomDescription);
 		setShowEdit(true);
-		console.log(moment(room.roomDate).format("dddd: DD-MM-YYYY HH:mm"));
 	}
 
 	useEffect(() => {
@@ -62,6 +58,9 @@ function MyRoomList(room, roomName) {
 	if (!user) {
 		return <></>;
 	}
+	socket.off("room-delete").on("room-delete", (deleteRoom) => {
+		getAppRooms(deleteRoom);
+	});
 	const deleteAppRoom = (id) => {
 		socket.emit(
 			"delete-room",
@@ -70,23 +69,22 @@ function MyRoomList(room, roomName) {
 		getRooms();
 	};
 
-	const updateAppRoom = (e, id) => {
-		socket.emit(
-			"update-room",
-			e.preventDefault(),
-			axios
-				.put(`http://localhost:5001/rooms/${id}`, {
-					roomName: newRoomName,
-					roomDate: newRoomDate,
-					roomDescription: newRoomDescription,
-				})
-				.then((res) => {
-					getRooms();
-					setNewRoomName("");
-					setNewRoomDate("");
-					setNewRoomDescription("");
-				})
-		);
+	const updateRoom = (e, id, updateType) => {
+		e.preventDefault();
+		updateType = "updateRoom";
+		axios
+			.put(`http://localhost:5001/rooms/${id}`, {
+				roomName: newRoomName,
+				roomDate: newRoomDate,
+				roomDescription: newRoomDescription,
+				updateType: updateType,
+			})
+			.then((res) => {
+				getRooms();
+				setNewRoomName("");
+				setNewRoomDate("");
+				setNewRoomDescription("");
+			});
 	};
 
 	return (
@@ -100,7 +98,8 @@ function MyRoomList(room, roomName) {
 							(room) =>
 								user._id === room.roomUser &&
 								room.roomName !== "Lobby" &&
-								room.roomType === "Hiking"
+								room.roomType === "Hiking" &&
+								room.expired === "false"
 						)
 						.map((room, listIdxHiking) => (
 							<div
@@ -113,50 +112,53 @@ function MyRoomList(room, roomName) {
 										<a href="/Hiking">Hiking</a>
 									</h2>
 								)}
-								<ListGroup.Item
-									className="listItem mb-3"
-									onClick={() => joinRoom(room._id)}
-									active={room._id === currentRoom}
-									style={{
-										cursor: "pointer",
-										display: "flex",
-										justifyContent: "space-between",
-									}}
-								>
-									<div className="list-info pe-3">
-										<h5>{room.roomName}</h5>
-										<div>
-											<span className="me-3">
-												{room.roomName !== "Lobby" &&
-													`${moment(room.roomDate).format(
-														"dddd: DD-MM-YYYY HH:mm"
-													)}`}
-											</span>
-											{room.roomDescription ? (
-												<i
-													data-bs-toggle="tooltip"
-													effect="solid"
-													data-bs-placement="bottom"
-													title={room.roomDescription}
-													className="fas fa-info-circle"
-												></i>
-											) : (
-												""
-											)}{" "}
+								{moment(room.roomDate).format("DD-MM-YYYY HH:mm") >
+									moment().format("DD-MM-YYYY HH:mm") && (
+									<ListGroup.Item
+										className="listItem mb-3"
+										onClick={() => joinRoom(room._id)}
+										active={room._id === currentRoom}
+										style={{
+											cursor: "pointer",
+											display: "flex",
+											justifyContent: "space-between",
+										}}
+									>
+										<div className="list-info pe-3">
+											<h5>{room.roomName}</h5>
+											<div>
+												<span className="me-3">
+													{room.roomName !== "Lobby" &&
+														`${moment(room.roomDate).format(
+															"dddd: DD-MM-YYYY HH:mm"
+														)}`}
+												</span>
+												{room.roomDescription ? (
+													<i
+														data-bs-toggle="tooltip"
+														effect="solid"
+														data-bs-placement="bottom"
+														title={room.roomDescription}
+														className="fas fa-info-circle"
+													></i>
+												) : (
+													""
+												)}{" "}
+											</div>
 										</div>
-									</div>
-									<div>
-										<span
-											className="me-3"
-											onClick={() => handleShowEdit(room._id)}
-										>
-											<i className="fas fa-pen-to-square"></i>
-										</span>
-										<span onClick={() => deleteAppRoom(room._id)}>
-											<i className="fas fa-times"></i>
-										</span>
-									</div>
-								</ListGroup.Item>
+										<div>
+											<span
+												className="me-3"
+												onClick={() => handleShowEdit(room._id)}
+											>
+												<i className="fas fa-pen-to-square"></i>
+											</span>
+											<span onClick={() => deleteAppRoom(room._id)}>
+												<i className="fas fa-times"></i>
+											</span>
+										</div>
+									</ListGroup.Item>
+								)}
 							</div>
 						))}{" "}
 				</div>
@@ -167,7 +169,8 @@ function MyRoomList(room, roomName) {
 							(room) =>
 								user._id === room.roomUser &&
 								room.roomName !== "Lobby" &&
-								room.roomType === "Soccer"
+								room.roomType === "Soccer" &&
+								room.expired === "false"
 						)
 						.map((room, listIdxSoccer) => (
 							<div
@@ -224,6 +227,70 @@ function MyRoomList(room, roomName) {
 										</span>
 									</div>
 								</ListGroup.Item>
+								{/* )} */}
+							</div>
+						))}{" "}
+				</div>
+				{/* Expired Rooms */}
+				<div className="listItemWrapper mb-5">
+					{rooms
+						.filter(
+							(room) =>
+								user._id === room.roomUser &&
+								room.roomName !== "Lobby" &&
+								room.expired === "true"
+						)
+						.map((room, listIdxExpire) => (
+							<div
+								key={listIdxExpire}
+								id="ExpireRoom"
+								className="roomsListItem"
+							>
+								{listIdxExpire === 0 && <h2 className="mb-3">Expired Rooms</h2>}
+								<ListGroup.Item
+									className="listItem mb-3"
+									onClick={() => joinRoom(room._id)}
+									active={room._id === currentRoom}
+									style={{
+										cursor: "pointer",
+										display: "flex",
+										justifyContent: "space-between",
+									}}
+								>
+									<div className="list-info pe-3">
+										<h5>{room.roomName}</h5>
+										<div>
+											<span className="me-3">
+												{room.roomName !== "Lobby" &&
+													`${moment(room.roomDate).format(
+														"dddd: DD-MM-YYYY HH:mm"
+													)}`}
+											</span>
+											{room.roomDescription ? (
+												<i
+													data-bs-toggle="tooltip"
+													effect="solid"
+													data-bs-placement="bottom"
+													title={room.roomDescription}
+													className="fas fa-info-circle"
+												></i>
+											) : (
+												""
+											)}{" "}
+										</div>
+									</div>
+									<div>
+										<span
+											className="me-3"
+											onClick={() => handleShowEdit(room._id)}
+										>
+											<i className="fas fa-pen-to-square"></i>
+										</span>
+										<span onClick={() => deleteAppRoom(room._id)}>
+											<i className="fas fa-times"></i>
+										</span>
+									</div>
+								</ListGroup.Item>
 							</div>
 						))}{" "}
 				</div>
@@ -236,10 +303,7 @@ function MyRoomList(room, roomName) {
 							<Modal.Title>Edit Room</Modal.Title>
 						</Modal.Header>
 						<Modal.Body>
-							<Form
-								id="roomFormEdit"
-								onSubmit={(e) => updateAppRoom(e, room._id)}
-							>
+							<Form id="roomFormEdit" onSubmit={(e) => updateRoom(e, room._id)}>
 								<Row>
 									<Col md={12} className="mb-3">
 										<Form.Group className="d-flex flex-column">
@@ -261,14 +325,8 @@ function MyRoomList(room, roomName) {
 													emptyLabel={moment(room.roomDate).format(
 														"dddd: DD-MM-YYYY HH:mm"
 													)}
-													// valueDefault={new Date("2024/09/28")}
-													// selected={new Date("2024/09/28")}
-													// defaultValue={new Date("2024/09/28")}
-													// emptyLabel={moment(room.roomDate).format(
-													// 	"dddd: DD-MM-YYYY HH:mm"
-													// )}
 													value={newRoomDate}
-													format={"eeee:  dd-MM-yyyy HH:mm"}
+													format={"eeee: dd-MM-yyyy HH:mm"}
 													disablePast
 													onChange={(newRoomDate) => {
 														setNewRoomDate(newRoomDate);

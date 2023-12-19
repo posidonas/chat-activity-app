@@ -25,15 +25,20 @@
 		"@testing-library/user-event": "^13.5.0",
 		"autoprefixer": "10.4.5",
 		"bootstrap": "^5.2.3",
+		"crypto": "^1.0.1",
 		"curl": "^0.1.4",
 		"date-fns": "^2.29.3",
 		"dayjs": "^1.11.6",
+		"ejs": "^3.1.8",
 		"fbjs": "^3.0.4",
+		"graphql": "^16.6.0",
 		"install": "^0.13.0",
+		"jsx": "^0.9.89",
 		"moment": "^2.29.4",
 		"moment-jalaali": "^0.9.6",
 		"mongodb": "^4.12.0",
 		"npm": "^9.1.1",
+		"prop-types": "^15.8.1",
 		"rc-datetime-picker": "^1.6.1",
 		"react": "^17.0.2",
 		"react-bootstrap": "^2.6.0",
@@ -82,5 +87,8 @@
 			"last 1 firefox version",
 			"last 1 safari version"
 		]
+	},
+	"browser": {
+		"crypto": false
 	}
 }

@@ -19,10 +19,14 @@ import Tab from "react-bootstrap/Tab";
 import DateFnsUtils from "@date-io/date-fns"; // choose your lib
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
+// import { useJoinRoomTestMutation } from "../services/appApi";
+import axios from "axios";
 import "./Sidebar.css";
 
 function SidebarCommon(props) {
 	const moment = require("moment");
+
+	// const [joinRoomTest] = useJoinRoomTestMutation();
 
 	const location = useLocation();
 	const locationText =
@@ -47,6 +51,34 @@ function SidebarCommon(props) {
 	const [newRoomDate, setNewRoomDate] = useState(new Date());
 	const [show, setShow] = useState(false);
 
+	const updateMembersInRoom = (id, room, updateType) => {
+		updateType = "updateMembers";
+		axios
+			.put(`http://localhost:5001/rooms/${id}`, {
+				members: user._id,
+				updateType: updateType,
+			})
+			.then((res) => {
+				getRooms();
+				// setTimeout(() => {
+				// 	socket.emit("new-user");
+				// }, 5000);
+			});
+		setTimeout(() => {
+			socket.emit("new-user");
+		}, 5000);
+	};
+	// setInterval(async () => {
+	// 	socket.emit("join-room");
+	// }, 1000);
+	// const updateMembersInRoom = (id, room) => {
+	// 	const newMembers = user._id;
+	// 	const updateType = "updateMembers";
+	// 	const roomId = currentRoom;
+	// 	socket.emit("new-room1", newMembers, updateType, roomId);
+	// 	getRooms();
+	// 	setCurrentRoom(currentRoom);
+	// };
 	const onUpdateField = (e) => {
 		const nextFormState = {
 			...newRoomName,
@@ -62,10 +94,11 @@ function SidebarCommon(props) {
 		if (!user) {
 			return alert("Please login");
 		}
-
 		socket.emit("join-room", room, currentRoom);
 		setCurrentRoom(room);
-
+		setTimeout(() => {
+			socket.emit("new-user");
+		}, 5000);
 		if (isPublic) {
 			setPrivateMemberMsg(null);
 		}
@@ -132,6 +165,7 @@ function SidebarCommon(props) {
 		const roomId = currentRoom;
 		const newRoomType = locationText;
 		const newRoomUser = user._id;
+		const expired = "false";
 		socket.emit(
 			"new-room",
 			roomId,
@@ -140,25 +174,13 @@ function SidebarCommon(props) {
 			newRoomType,
 			newRoomDate,
 			newRoomDescription,
-			user
+			user,
+			expired
 		);
 		setNewRoomName("");
 		getRooms();
 		setCurrentRoom(currentRoom);
 		setShow(false);
-		// axios
-		// 	.post("http://localhost:5001/rooms/", {
-		// 		roomName: newRoomName,
-		// 		roomType: locationText,
-		// 		roomDate: newRoomDate,
-		// 		roomUser: user._id,
-		// 		roomDescription: newRoomDescription,
-		// 	})
-		// 	.then((res) => {
-		// 		getRooms();
-		// 		setCurrentRoom(currentRoom);
-		// 		setShow(false);
-		// 	});
 	}
 
 	return (
@@ -225,7 +247,10 @@ function SidebarCommon(props) {
 														<div key={listIdx} ref={roomEndRef}>
 															<ListGroup.Item
 																className="listItem mb-2"
-																onClick={() => joinRoom(room._id)}
+																onClick={() => {
+																	joinRoom(room._id);
+																	updateMembersInRoom(room._id);
+																}}
 																active={room._id === currentRoom}
 																style={{
 																	cursor: "pointer",
@@ -263,7 +288,7 @@ function SidebarCommon(props) {
 																	</span>
 																)}
 																{user._id === room.roomUser && (
-																	<a href="/rooms/myrooms">
+																	<a href="/myrooms">
 																		<i
 																			className="fa-solid fa-signature"
 																			title="Edit my Rooms"
@@ -330,7 +355,7 @@ function SidebarCommon(props) {
 																	</span>
 																)}
 																{user._id === room.roomUser && (
-																	<a href="/rooms/myrooms">
+																	<a href="/myrooms">
 																		<i
 																			className="fa-solid fa-signature"
 																			title="Edit my Rooms"
@@ -393,7 +418,7 @@ function SidebarCommon(props) {
 																	</span>
 																)}
 																{user._id === room.roomUser && (
-																	<a href="/rooms/myrooms">
+																	<a href="/myrooms">
 																		<i
 																			className="fa-solid fa-signature"
 																			title="Edit my Rooms"

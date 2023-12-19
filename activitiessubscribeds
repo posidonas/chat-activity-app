@@ -1,0 +1,39 @@
+[{
+  "_id": {
+    "$oid": "63a4e421019d20d631b512a7"
+  },
+  "activitySubscribedName": "Soccer",
+  "activitySubscribedUser": "6396372e4ada61345bda1820",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1671750689299"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1672511262197"
+    }
+  },
+  "__v": 0,
+  "favorite": false,
+  "activitySubscribed": true
+},{
+  "_id": {
+    "$oid": "63a5f5739d10b5ac2a882033"
+  },
+  "activitySubscribedName": "Hiking",
+  "activitySubscribedUser": "6396372e4ada61345bda1820",
+  "activitySubscribed": false,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1671820659817"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1672506865542"
+    }
+  },
+  "__v": 0,
+  "favorite": "true"
+}]

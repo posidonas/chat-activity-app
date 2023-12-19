@@ -6,8 +6,40 @@
 	background-repeat: no-repeat;
 	overflow-x: hidden;
 }
-
+.color-white {
+	color: #fff;
+	text-decoration: none;
+}
+.color-white:hover {
+	color: rgb(231, 231, 231);
+}
 .home-message-icon {
 	margin-left: 10px;
 	display: inline-block;
 }
+.button-ele {
+	cursor: pointer;
+}
+.activity-wrapper {
+	position: relative;
+	cursor: unset !important;
+	padding: 5px !important;
+}
+.activity-wrapper input {
+	cursor: pointer !important;
+}
+
+/* .activity-wrapper:after {
+	content: "";
+	height: 22px;
+	width: 1px;
+	position: absolute;
+	background: #000;
+	transform: translateY(-50%);
+	top: 50%;
+}
+.activity-wrapper:last-child:after {
+	content: "";
+	height: 0;
+	width: 0;
+} */

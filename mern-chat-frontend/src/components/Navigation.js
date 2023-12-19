@@ -3,7 +3,7 @@ import { Nav, Navbar, Container, Button, NavDropdown } from "react-bootstrap";
 import { useLogoutUserMutation } from "../services/appApi";
 import { useSelector } from "react-redux";
 import { LinkContainer } from "react-router-bootstrap";
-import logo from "../assets/logo-new2.jpg";
+import logo from "../assets/chatCtivitiesLogo.png";
 import "./css/Navigation.css";
 function Navigation() {
 	const user = useSelector((state) => state.user);
@@ -19,11 +19,7 @@ function Navigation() {
 			<Container>
 				<LinkContainer to="/">
 					<Navbar.Brand>
-						<img
-							src={logo}
-							style={{ width: 50, height: 50 }}
-							alt="Nav Avatar"
-						/>
+						<img src={logo} style={{ width: 250 }} alt="Nav Avatar" />
 					</Navbar.Brand>
 				</LinkContainer>
 				<Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -55,7 +51,7 @@ function Navigation() {
 								}
 								id="basic-nav-dropdown"
 							>
-								<NavDropdown.Item href="#action/3.1">My Rooms</NavDropdown.Item>
+								<NavDropdown.Item href="/myrooms">My Rooms</NavDropdown.Item>
 								<NavDropdown.Item href="#action/3.2">
 									Another action
 								</NavDropdown.Item>

@@ -14,12 +14,14 @@ import { AppContext, socket } from "./context/appContext";
 function App() {
 	const [rooms, getAppRooms] = useState([]);
 	const [activities, getActivities] = useState([]);
+	const [subscribedActivities, getSubscribedActivities] = useState([]);
 	const [currentRoom, setCurrentRoom] = useState([]);
 	const [roomName, setRoomName] = useState([]);
 	const [members, setMembers] = useState([]);
 	const [messages, setMessages] = useState([]);
 	const [privateMemberMsg, setPrivateMemberMsg] = useState({});
 	const [newMessages, setNewMessages] = useState({});
+	const [favorite, setFavorite] = useState(false);
 	const user = useSelector((state) => state.user);
 
 	return (
@@ -42,6 +44,10 @@ function App() {
 				setRoomName,
 				getActivities,
 				activities,
+				getSubscribedActivities,
+				subscribedActivities,
+				favorite,
+				setFavorite,
 			}}
 		>
 			<BrowserRouter>
@@ -56,7 +62,7 @@ function App() {
 					)}
 					<Route path="/soccer" element={<Soccer />} />
 					<Route path="/hiking" element={<Hiking />} />
-					<Route path="/rooms/myrooms" element={<MyRoomList />} />
+					<Route path="/myrooms" element={<MyRoomList />} />
 				</Routes>
 			</BrowserRouter>
 		</AppContext.Provider>
