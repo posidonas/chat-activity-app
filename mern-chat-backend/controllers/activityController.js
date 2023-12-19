@@ -7,17 +7,24 @@ const getActivities = asyncHandler(async (req, res) => {
 });
 
 const setActivities = asyncHandler(async (req, res) => {
+	const newIdFrom = req.body.idFrom;
 	const newActivityName = req.body.activityName;
 	const newActivityType = req.body.activityType;
 	const newActivityDescription = req.body.activityDescription;
+	const newActivityUser = req.body.activityUser;
+	const newActivitySubscribed = req.body.activitySubscribed;
 	if (!req.body.activityName) {
 		res.status(400);
 		throw new Error("Please add a text field");
 	}
+
 	const activities = await Activities.create({
+		idFrom: newIdFrom,
 		activityName: newActivityName,
 		activityType: newActivityType,
 		activityDescription: newActivityDescription,
+		activityUser: newActivityUser,
+		activitySubscribed: newActivitySubscribed,
 	});
 	res.status(200).json(activities);
 });

@@ -6,7 +6,11 @@ const {
 	deleteActivities,
 } = require("../controllers/activityController");
 
-router.route("/").get(getActivities).post(setActivities);
-router.route("/:id").put(updateActivities).delete(deleteActivities);
+router
+	.route("/")
+	.get(getActivities)
+	.post(setActivities)
+	.delete(deleteActivities);
+router.route("/:id").put(updateActivities);
 
 module.exports = router;
